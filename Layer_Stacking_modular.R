@@ -1,3 +1,11 @@
+#the following packages are required
+library(rLiDAR)
+library(doParallel)
+library(raster)
+library(sp)
+library(rgeos)
+library(prevR)
+library(fpc)
 ###############################################################################
 #                             LAYER STACKING                                  #
 #                                                                             #
@@ -58,14 +66,7 @@ buf_width=0.6
 #0.6m was ideal for the high density LiDAR tested.
 core_width=0.8
 
-#the following packages are required
-library(rLiDAR)
-library(doParallel)
-library(raster)
-library(sp)
-library(rgeos)
-library(prevR)
-library(fpc)
+
 
 #################Buffer function############################
 buffer.groups<-function(group, buf_width=.6){
