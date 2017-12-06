@@ -6,6 +6,7 @@ library(sp)
 library(rgeos)
 library(prevR)
 library(fpc)
+
 ###############################################################################
 #                             LAYER STACKING                                  #
 #                                                                             #
@@ -23,10 +24,10 @@ library(fpc)
 
 #Please specify the folder in which LiDAR files are stored. Only ".las" files 
 # can be stored here
-fpath <- "C:\\location\\location"
+fpath <- "H:\\Temp\\LS\\lidar\\"#"C:\\location\\location"
 
 #Please specify the folder in which the processed csv files will be stored.
-Output <- "C:\\location\\location"
+Output <- "H:\\Temp\\LS\\"#"C:\\location\\location"
 
 #Number of processor cores to use for parallel processesing
 #Default is the number of cores you have in your machine minus 1.
@@ -49,23 +50,22 @@ if (hw==TRUE){
   c=2.5
 }
 
-#Threshold (meters) for removing small trees. Generally trees shorter than this threshold
-#will be removed.
+#Threshold  for removing small trees. Takes out trees with less than t clusters identified.
+#Generally trees shorter than this threshold will be removed. 
 t=3
 
-####### Caution, these are 'last resort' parameters #########################
+#parameters to tinker with if trees are being over or under segmented
 
 #Refers to the width of buffers places around each cluster. A larger value may be 
-#needed with low density LiDAR if the points are spaced far apart from one another.
+#needed with low density LiDAR, or larger trees
 #0.5m was ideal for the high density LiDAR tested.
 buf_width=0.6
 
 #Refers to the width of the tree's core. Clusters touching this core
 #will be considered part of that tree. A larger value may be 
-#needed with low density LiDAR if the points are spaced far apart from one another
+#needed with low density LiDAR, or larger tree crowns
 #0.6m was ideal for the high density LiDAR tested.
-core_width=0.8
-
+core_width=0.6
 
 
 #################Buffer function############################
@@ -375,7 +375,7 @@ layer_stacker=function(inFile, buffer.groups,Output, p, n, t, c,d, hw, buf_width
   tree_polys=Filter(Negate(function(x) is.null(unlist(x))), tree_polys)
 #Need to remove trees with few layers (they're fragments)
   large_trees=function(x){
-    if(length(x[[1]][[1]])>=t*2){
+    if(length(x[[1]][[1]])>=t){
       TRUE
     }else{FALSE}
   }
