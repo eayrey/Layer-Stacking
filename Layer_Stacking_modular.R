@@ -1,12 +1,3 @@
-#the following packages are required
-library(rLiDAR)
-library(doParallel)
-library(raster)
-library(sp)
-library(rgeos)
-library(prevR)
-library(fpc)
-
 ###############################################################################
 #                             LAYER STACKING                                  #
 #                                                                             #
@@ -45,7 +36,7 @@ d=FALSE
 #number standard deviations below which an abnormally large tree crown 
 #segment will be allowed. A small number may be needed in dense forests with
 #small tree crowns, a larger number may be needed in forests with large trees
-c=2
+c=3.5
 if (hw==TRUE){
   c=2.5
 }
@@ -67,6 +58,14 @@ buf_width=0.6
 #0.6m was ideal for the high density LiDAR tested.
 core_width=0.6
 
+#the following packages are required
+library(rLiDAR)
+library(doParallel)
+library(raster)
+library(sp)
+library(rgeos)
+library(prevR)
+library(fpc)
 
 #################Buffer function############################
 buffer.groups<-function(group, buf_width=.6){
@@ -319,11 +318,11 @@ layer_stacker=function(inFile, buffer.groups,Output, p, n, t, c,d, hw, buf_width
   ####################CLIP OUT TREE POLYGONS##############################
   #cl=makeCluster(n)
   #registerDoParallel(cl)
-  tree_polys=foreach(c=1:length(buf_cores), .errorhandling="pass") %dopar% {
+  tree_polys=foreach(gr=1:length(buf_cores), .errorhandling="pass") %dopar% {
    library(sp)
    library(rgeos) 
    library(prevR)
-   core=buf_cores[c,1]
+   core=buf_cores[gr,1]
    poly_attributes=slot(core,"polygons")
    coords=matrix(sapply(core@polygons, function(x) coordinates(x@Polygons[[1]])),ncol=2,byrow=F)
   
@@ -391,7 +390,7 @@ layer_stacker=function(inFile, buffer.groups,Output, p, n, t, c,d, hw, buf_width
     library(prevR)
     layer=data.frame(layers[l])
     layer$TreeNumber=NA
-    colnames(layer)=c("X","Y","Z","Intensity","ReturnNumber","Layer","TreeNumber")
+    colnames(layer)= c("X","Y","Z","Intensity","ReturnNumber","Layer","TreeNumber") #c("X","Y","Z","Layer","TreeNumber") 
     for (t in 1:length(tree_polys)){
       tree=tree_polys[t][[1]][[1]]
     #tree=in_polys
@@ -406,10 +405,10 @@ layer_stacker=function(inFile, buffer.groups,Output, p, n, t, c,d, hw, buf_width
         pointsin=(lapply(num_polys, function(x) {point.in.SpatialPolygons(layer[,1],layer[,2], polyin[x,])}))
         pointsin=Reduce("|",pointsin)
         pointsin=pointsin | pointsinc
-        layer[pointsin,]$TreeNumber=t
+        layer[pointsin,]$TreeNumber=t+1
         
         if (sum(pointsin>0)){
-          layer[pointsin,]$TreeNumber=t
+          layer[pointsin,]$TreeNumber=t+1
         }
       }
     }
@@ -429,3 +428,4 @@ for (p in 1:length(a)){
   proc.time() - ptm
   print (p/length(a)*100)
 } 
+
